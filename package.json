@@ -1,0 +1,16 @@
+{
+  "name": "cargoship-webapp",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD",
+  "dependencies": {
+    "coffee-script": "~1.6.3",
+    "cargoship": "~0.2.10",
+    "jade": "~0.35.0"
+  }
+}
