@@ -8,11 +8,17 @@ module.exports = (folder) ->
 	webapp.preuse = (ship) ->		
 		ship.get /\.html$/, (m,next) ->
 			jade.renderFile folder + '/' + m.url.replace('.html','.jade'), (err,result) ->
-				return m.end() if err
+				if err
+					console.log "HTML render error"
+					console.log err
+					return m.end() 
 				m.end result
 
 		ship.get /\.js$/, (m,next) ->
 			webmake folder + '/' + m.url.replace('.js','.coffee'), {ext:['coffee'],sourceMap:true,cache:true}, (err,content) ->
-				return m.end() if err		
+				if err		
+					console.log "JS render error"
+					console.log err
+					return m.end() 
 				m.end content
 	webapp
