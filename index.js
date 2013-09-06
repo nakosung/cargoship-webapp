@@ -1,2 +1,2 @@
-module.exports = require('./lib/webapp.js')
+module.exports = require('./src/webapp')
 

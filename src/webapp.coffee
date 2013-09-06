@@ -1,5 +1,6 @@
 jade = require 'jade'
-Coffeescript = require 'coffee-script'
+webmake = require 'webmake'
+require 'webmake-coffee'
 fs = require 'fs'
 
 module.exports = (folder) ->
@@ -11,7 +12,7 @@ module.exports = (folder) ->
 				m.end result
 
 		ship.get /\.js$/, (m,next) ->
-			fs.readFile folder + '/' + m.url.replace('.js','.coffee'), (err,result) ->
+			webmake folder + '/' + m.url.replace('.js','.coffee'), {ext:['coffee'],sourceMap:true,cache:true}, (err,content) ->
 				return m.end() if err		
-				m.end Coffeescript.compile String(result)		
+				m.end content
 	webapp
