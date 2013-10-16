@@ -13,6 +13,7 @@
     "webmake-coffee": "~0.1.1",
     "webmake": "~0.3.20",
     "cargoship-webapp": "0.0.1",
-    "source-map": "~0.1.29"
+    "source-map": "~0.1.29",
+    "node-zookeeper-client": "~0.2.0"
   }
 }
