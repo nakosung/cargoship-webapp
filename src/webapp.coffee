@@ -1,6 +1,8 @@
 jade = require 'jade'
+
 webmake = require 'webmake'
 require 'webmake-coffee'
+
 fs = require 'fs'
 path = require 'path'
 ZK = 
@@ -8,19 +10,6 @@ ZK =
 	PORT : process.env.ZK_PORT or 2181
 
 zookeeper = require 'node-zookeeper-client'
-
-jade.filters =
-	stylus : (str,options) ->
-		colorspaces = require('colorspaces')
-		nib = require('nib')
-		
-		str = str.replace /\\n/g, '\n'
-		stylus = require('stylus')
-		stylus(str, options).use(colorspaces()).use(nib()).render (err,css) ->
-			throw err if err 
-			ret = css.replace /\n/g, '\\n'
-		
-		'<style type="text/css">' + ret + '</style>'  
 
 module.exports = (folder) ->
 	transformers = 
@@ -36,6 +25,18 @@ module.exports = (folder) ->
 						
 					content = "(function () { locals = #{JSON.stringify(locals)}; #{content}; })();"
 					next null, content
+		'.styl' :
+			into : '.css'
+			fn : (full_path,locals,next) ->
+				fs.readFile full_path, 'utf8', (err,text) ->					
+					return err if err
+
+					stylus = (require 'stylus') text
+					stylus.use (require 'colorspaces')()
+					stylus.use (require 'nib')()
+
+					stylus.render next
+
 
 	webapp = (m,next) -> next m
 	webapp.preuse = (ship) ->	
@@ -45,10 +46,11 @@ module.exports = (folder) ->
 				client.once 'connected', ->	
 					client.once 'disconnected', sync
 
-					base_dir = "/webapps/#{ship.user.name}"
+					base_dir = "/webapps/#{ship.user.name}"					
 
 					client.mkdirp base_dir, (err) ->				
 						save = (file,content,next) ->
+							console.log "saving #{file} into zookeeper"
 							content = new Buffer(content)
 							p = "#{base_dir}/#{file}"
 							client.exists p, (err,stat) ->
@@ -79,21 +81,17 @@ module.exports = (folder) ->
 						fs.readdir folder, (err,result) ->
 							return if err
 
+							console.log result
+
 							result.forEach saveFile
+
+							watcher = fs.watch folder, (e,filename) ->
+								saveFile filename
+
+							client.once 'disconnected', ->
+								watcher.close()
 						# client.create "#{path}/#{data.role}_", item.buffer, zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL, (err) ->
 				client.connect()
 
 			sync()
-
-
-		for ext, T of transformers
-			do (ext,T) ->				
-				ship.get new RegExp("\\#{T.into}"), (m,next) ->
-					console.log 'getting!'
-					T.fn folder + '/' + m.url.replace(T.into,ext), m.locals or {}, (err,result) ->
-						if err
-							console.log "#{ext} -> #{T.into} render error"
-							console.log err
-							return m.end() 
-						m.end result		
 	webapp
