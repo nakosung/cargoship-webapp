@@ -9,6 +9,19 @@ ZK =
 
 zookeeper = require 'node-zookeeper-client'
 
+jade.filters =
+	stylus : (str,options) ->
+		colorspaces = require('colorspaces')
+		nib = require('nib')
+		
+		str = str.replace /\\n/g, '\n'
+		stylus = require('stylus')
+		stylus(str, options).use(colorspaces()).use(nib()).render (err,css) ->
+			throw err if err 
+			ret = css.replace /\n/g, '\\n'
+		
+		'<style type="text/css">' + ret + '</style>'  
+
 module.exports = (folder) ->
 	transformers = 
 		'.jade' :
