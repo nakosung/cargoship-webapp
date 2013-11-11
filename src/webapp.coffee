@@ -3,9 +3,15 @@ webmake = require 'webmake'
 require 'webmake-coffee'
 fs = require 'fs'
 path = require 'path'
+
 ZK = 
 	ADDRESS : process.env.ZK_ADDRESS or 'localhost'
 	PORT : process.env.ZK_PORT or 2181
+
+[proto,addr,port] = process.env.ZK_PORT.split(':')
+if port?
+	ZK.ADDRESS = addr.substr(2)
+	ZK.PORT = port
 
 zookeeper = require 'node-zookeeper-client'
 
